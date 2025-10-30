@@ -1,0 +1,118 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loan Approval Predictor</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="container">
+    <h1>🏦 Prediksi Persetujuan Pinjaman</h1>
+    <form id="predictionForm">
+      <div class="form-group">
+        <label>Gender</label>
+        <select name="Gender" required>
+          <option value="Male">Laki-laki</option>
+          <option value="Female">Perempuan</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Menikah?</label>
+        <select name="Married" required>
+          <option value="Yes">Ya</option>
+          <option value="No">Tidak</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Jumlah Tanggungan</label>
+        <select name="Dependents" required>
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3+">3 atau lebih</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Pendidikan</label>
+        <select name="Education" required>
+          <option value="Graduate">Sarjana</option>
+          <option value="Not Graduate">Tidak Sarjana</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Wirausaha?</label>
+        <select name="Self_Employed" required>
+          <option value="No">Tidak</option>
+          <option value="Yes">Ya</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Penghasilan Pemohon (Rp)</label>
+        <input type="number" name="ApplicantIncome" placeholder="Contoh: 5000000" required />
+      </div>
+      <div class="form-group">
+        <label>Penghasilan Rekan Pemohon (Rp)</label>
+        <input type="number" name="CoapplicantIncome" placeholder="0 jika tidak ada" required />
+      </div>
+      <div class="form-group">
+        <label>Jumlah Pinjaman (Juta Rp)</label>
+        <input type="number" step="0.1" name="LoanAmount" placeholder="Contoh: 110" required />
+      </div>
+      <div class="form-group">
+        <label>Jangka Waktu Pinjaman (Bulan)</label>
+        <input type="number" name="Loan_Amount_Term" placeholder="Contoh: 360" required />
+      </div>
+      <div class="form-group">
+        <label>Riwayat Kredit</label>
+        <select name="Credit_History" required>
+          <option value="1">Baik</option>
+          <option value="0">Buruk</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Area Properti</label>
+        <select name="Property_Area" required>
+          <option value="Urban">Perkotaan</option>
+          <option value="Rural">Pedesaan</option>
+          <option value="Semiurban">Semi-perkotaan</option>
+        </select>
+      </div>
+      <button type="submit">Prediksi Sekarang</button>
+    </form>
+
+    <div id="result" class="result"></div>
+  </div>
+
+  <script>
+    document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const resultDiv = document.getElementById('result');
+
+      try {
+        const res = await fetch('/predict', {
+          method: 'POST',
+          body: new URLSearchParams(formData)
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+        } else {
+          resultDiv.innerHTML = `
+            <p>${data.prediction}</p>
+            <p style="font-size:16px; margin-top:8px;">Keyakinan: ${data.confidence}</p>
+          `;
+        }
+        resultDiv.classList.add('show');
+      } catch (err) {
+        resultDiv.innerHTML = '<p style="color:red;">Terjadi kesalahan jaringan.</p>';
+        resultDiv.classList.add('show');
+      }
+    });
+  </script>
+</body>
+</html>
